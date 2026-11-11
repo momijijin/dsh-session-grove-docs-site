@@ -1,0 +1,132 @@
+/* 左栏品牌统计：latest tag 独占第一行，stars / forks 在第二行等分。
+   主题按 stars → forks → tag 的 DOM 顺序渲染三列 grid，这里改为可换行 flex：
+   最后一项（版本 tag，含 #latest-tag-name）用 order 提到最前并占满整行。 */
+.site-region--leftbar .brand-header--regular .brand-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.site-region--leftbar .brand-header--regular .brand-stats > .brand-stat {
+  order: 0;
+  flex: 1 1 0;
+}
+
+.site-region--leftbar .brand-header--regular .brand-stats > .brand-stat:last-child {
+  order: -1;
+  flex: 1 1 100%;
+}
+
+/* 版本 tag 的容器变成整行后，不再需要省略号截断。 */
+.site-region--leftbar .brand-header--regular .brand-stats > .brand-stat:last-child .brand-stat__value,
+.site-region--leftbar #latest-tag-name {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+/* 左栏 npm 统计：week / month / total 三个数值块等分一行。
+   数值在上、英文标签在下，整块指向 npm 包页面；
+   尺寸与品牌区的 stars / forks 一致，hover 时整块出现浅色背景。 */
+.site-stats .site-stats__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.site-stats .site-stats__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 2px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.site-stats .site-stats__tile:hover,
+.site-stats .site-stats__tile:focus-visible {
+  background: var(--block-border);
+}
+
+.site-stats .site-stats__tile:focus-visible {
+  outline: 2px solid var(--theme);
+  outline-offset: 2px;
+}
+
+.site-stats .site-stats__tile .brand-stat__value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-p1);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.site-stats .site-stats__tile .brand-stat__label {
+  color: var(--text-p3);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* 更新时间单独一行小字：宽度不足时省略，不折行。 */
+.site-stats .site-stats__meta {
+  margin: 6px 0 0;
+  color: var(--text-p3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 外观：glass 预设下的左栏渐变（与文章封面的靛蓝主色一致）。
+   渐变挂在 24px 圆角的卡片层，避免方角外露与页面底部残留。 */
+.site-region--leftbar .site-region__surface {
+  background-image: linear-gradient(160deg, hsl(222 70% 94%), hsl(190 65% 92%) 55%, hsl(260 45% 94%));
+}
+
+/* 首页列表：classic 卡片仍按 2:1 铺满封面，这里压成小横幅，降低视觉重量 */
+.post-list .post-card .post-cover img {
+  aspect-ratio: auto;
+  height: 150px;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+/* 主题 .post-cover 用 -1rem 负 margin 做满幅出血；这里收回来，改成卡片内的小横幅 */
+.post-list .post-card .post-cover {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+}
+
+/* 收起态：左栏窄条贴左排列，网格首列收缩，避免右侧贴边、左侧留 200px 空洞 */
+html[data-leftbar-state="collapsed"] .site-workspace {
+  grid-template-columns: 96px minmax(0, 1fr) 296px;
+}
+
+html[data-leftbar-state="collapsed"] .site-region--leftbar {
+  justify-self: start;
+  margin-left: 32px;
+}
+
+/* 页面底色用同一实色同时铺在 html 与 body 上；文档比 body 高时露出的画布色也一致，不会出现底部细带 */
+html,
+body {
+  background-color: #f4f7fb;
+  background-image: none;
+}

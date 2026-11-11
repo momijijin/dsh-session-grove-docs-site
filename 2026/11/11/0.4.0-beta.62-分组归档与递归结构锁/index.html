@@ -1,0 +1,622 @@
+
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/2.0.0" theme-name="Stellar" theme-version="2.0.0">
+  
+  
+  <meta name="generator" content="Hexo 8.1.2">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title data-stellar-page-meta>0.4.0-beta.62：分组归档与递归结构锁 - dsh-session-grove</title>
+  <script data-stellar-script="core">
+    (function () {
+      var key = 'stellar:v2:leftbar-state';
+      var fallback = "expanded";
+      try {
+        var value = localStorage.getItem(key);
+        document.documentElement.dataset.leftbarState = value === 'collapsed' || value === 'expanded' ? value : fallback;
+      } catch (error) {
+        document.documentElement.dataset.leftbarState = fallback;
+      }
+    })();
+  </script>
+
+  <meta name="description" content="给分组本身加归档：独立的第二套三态筛选、整棵子树只读的结构锁，以及搜索命中隐藏组时的显式「显示已归档分组」动作。" data-stellar-page-meta="">
+<meta property="og:type" content="article" data-stellar-page-meta="">
+<meta property="og:title" content="0.4.0-beta.62：分组归档与递归结构锁" data-stellar-page-meta="">
+<meta property="og:url" content="https://momijijin.github.io/2026/11/11/0.4.0-beta.62-%E5%88%86%E7%BB%84%E5%BD%92%E6%A1%A3%E4%B8%8E%E9%80%92%E5%BD%92%E7%BB%93%E6%9E%84%E9%94%81/" data-stellar-page-meta="">
+<meta property="og:site_name" content="dsh-session-grove" data-stellar-page-meta="">
+<meta property="og:description" content="给分组本身加归档：独立的第二套三态筛选、整棵子树只读的结构锁，以及搜索命中隐藏组时的显式「显示已归档分组」动作。" data-stellar-page-meta="">
+<meta property="og:locale" content="zh_CN" data-stellar-page-meta="">
+<meta property="og:image" content="https://momijijin.github.io/dsh-session-grove-docs-site/images/covers/v0.4.0-beta.62.webp" data-stellar-page-meta="">
+<meta property="article:author" content="momijijin" data-stellar-page-meta="">
+<meta property="article:published_time" content="2026-11-11T04:00:00.000Z" data-stellar-page-meta="">
+<meta property="article:modified_time" content="2026-11-11T14:30:00.000Z" data-stellar-page-meta="">
+<meta property="article:tag" content="UI" data-stellar-page-meta="">
+<meta property="article:tag" content="v0.4.0-beta.62" data-stellar-page-meta="">
+<meta property="article:tag" content="分组归档" data-stellar-page-meta="">
+<meta name="twitter:card" content="summary_large_image" data-stellar-page-meta="">
+<meta name="twitter:image" content="https://momijijin.github.io/dsh-session-grove-docs-site/images/covers/v0.4.0-beta.62.webp" data-stellar-page-meta=""><meta name="twitter:title" content="0.4.0-beta.62：分组归档与递归结构锁" data-stellar-page-meta="">
+  
+  
+  <meta name="keywords" content="v0.4.0-beta.62,分组归档,UI" data-stellar-page-meta="">
+
+  <!-- feed -->
+  
+
+  <link rel="preload" href="/dsh-session-grove-docs-site/css/main.css?v=2.0.0" as="style">
+  <link rel="stylesheet" href="/dsh-session-grove-docs-site/css/main.css?v=2.0.0">
+  <style>:root{--text-loading:"正在加载";--text-loading-error:"加载失败，请稍后重试。"}</style>
+
+
+  
+
+  
+
+  <script type="application/ld+json" data-stellar-page-meta="">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"momijijin","sameAs":[]},"dateCreated":"2026-11-11T12:00:00+08:00","dateModified":"2026-11-11T22:30:00+08:00","datePublished":"2026-11-11T12:00:00+08:00","description":"归档从「会话」扩展到了「分组」：整组连同子分组一起收进归档，视图里可以按三态筛选，归档后的整棵子树进入只读结构锁。它不会级联修改会话的归档状态，也不改 DOC_VERSION；搜索和头部计数共用同一套可见性规则。\n摘要① Group.archived 是新增可选布尔，缺失读 false，DOC_VERSION 保持 1。② 视图选项新增分组三态 hidden | all | only，与会话...","headline":"0.4.0-beta.62：分组归档与递归结构锁","mainEntityOfPage":{"@type":"WebPage","@id":"https://momijijin.github.io/2026/11/11/0.4.0-beta.62-%E5%88%86%E7%BB%84%E5%BD%92%E6%A1%A3%E4%B8%8E%E9%80%92%E5%BD%92%E7%BB%93%E6%9E%84%E9%94%81/"},"publisher":{"@type":"Organization","name":"momijijin","sameAs":[]},"url":"https://momijijin.github.io/2026/11/11/0.4.0-beta.62-%E5%88%86%E7%BB%84%E5%BD%92%E6%A1%A3%E4%B8%8E%E9%80%92%E5%BD%92%E7%BB%93%E6%9E%84%E9%94%81/","image":["/dsh-session-grove-docs-site/images/covers/v0.4.0-beta.62.webp"],"keywords":"v0.4.0-beta.62, 分组归档, UI","thumbnailUrl":"/dsh-session-grove-docs-site/images/covers/v0.4.0-beta.62.webp"}</script>
+  <link rel="stylesheet" href="/dsh-session-grove-docs-site/css/custom.css">
+
+  <link rel="stylesheet" href="/dsh-session-grove-docs-site/css/stellar-icons.css?v=7c185ad1a9a79674">
+  <link rel="preload" as="script" href="/dsh-session-grove-docs-site/js/stellar-icons.js?v=bdd3869026df0c56">
+  
+  
+</head>
+<body data-page-type="content" data-page-layout="post" data-article-style="tech"><div data-stellar-runtime-region id="site-cover" class="site-cover"></div><div class="site-shell" id="start" data-regions="leftbar rightbar"><div class="site-workspace">
+<aside data-stellar-runtime-region id="leftbar-region" class="site-region site-region--leftbar" data-region="leftbar" aria-label="Leftbar"><div class="site-region__surface ui-surface"><div class="site-region__decoration" aria-hidden="true"></div><div class="site-region__viewport"><header class="site-region__header site-region__zone site-region__zone--top">
+    <div class="widget-instance widget-instance--brand" data-widget-id="leftbar:fixed:brand" data-presentation="leftbar" data-leftbar-rail>
+<header class="brand-header brand-header--regular brand-header--site"><div class="brand-wrap"><a class="brand-image brand-image--avatar" href="&#x2F;dsh-session-grove-docs-site&#x2F;"><img no-lazy src="&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;logo.png" alt="" onerror="this.onerror&#x3D;null;this.src&#x3D;&quot;&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;stellar-error.491ee870f4940739.svg&quot;"></a><a class="brand-title" href="&#x2F;dsh-session-grove-docs-site&#x2F;"><div class="brand-name">Session Grove</div><div class="brand-tagline cap">使用说明</div></a><div class="brand-stats data-service ds-ghinfo" data-api="https:&#x2F;&#x2F;api.github.com&#x2F;repos&#x2F;momijijin&#x2F;dsh-session-grove"><a class="brand-stat ui-interactive card-hover card-hover--spotlight" target="_blank" rel="noopener" href="https:&#x2F;&#x2F;github.com&#x2F;momijijin&#x2F;dsh-session-grove&#x2F;stargazers"><span class="brand-stat__value" type="text" id="stargazers_count"></span><span class="brand-stat__label">stars</span></a><a class="brand-stat ui-interactive card-hover card-hover--spotlight" target="_blank" rel="noopener" href="https:&#x2F;&#x2F;github.com&#x2F;momijijin&#x2F;dsh-session-grove&#x2F;forks"><span class="brand-stat__value" type="text" id="forks_count"></span><span class="brand-stat__label">forks</span></a><a class="brand-stat data-service ds-ghinfo ui-interactive card-hover card-hover--spotlight" data-api="https:&#x2F;&#x2F;api.github.com&#x2F;repos&#x2F;momijijin&#x2F;dsh-session-grove&#x2F;tags" index="0" target="_blank" rel="noopener" href="https:&#x2F;&#x2F;github.com&#x2F;momijijin&#x2F;dsh-session-grove&#x2F;tags"><span class="brand-stat__value" type="text" id="latest-tag-name"></span><span class="brand-stat__label">tag</span></a></div></div><div class="brand-search">
+
+<div class="ui-collection" data-layout="list" data-variant="nav" data-density="auto">
+  
+    
+<button class="ui-collection__item ui-interactive card-hover card-hover--spotlight search-trigger has-hover-surface" type="button" title="搜索" aria-label="搜索" data-shell-action="open-search" data-search-instance="leftbar-brand-search" data-search-domain="blog" data-search-domain-label="博客" data-search-domain-blog="true">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Adapted from Google Material Icons by Material Design Authors - https://github.com/material-icons/material-icons/blob/master/LICENSE --><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3M3 13h3M3 18h8M16.83 13.83l3.76 3.76"/><circle cx="14" cy="11" r="4"/></g></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">搜索</span>
+      
+      
+    </span>
+  
+  <kbd class="search-shortcut" aria-hidden="true">⌘K</kbd>
+
+  
+</button>
+
+  
+</div>
+
+
+</div></header>
+</div>
+  </header>
+  <div class="site-region__body site-region__zone site-region__zone--body">
+    <div class="widget-instance widget-instance--menu" data-widget-id="leftbar:fixed:menu" data-presentation="leftbar" data-leftbar-rail>
+
+
+<nav class="menu dis-select">
+<div class="ui-collection" data-layout="list" data-variant="nav" data-density="auto">
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight is-active" href="&#x2F;dsh-session-grove-docs-site&#x2F;" title="首页" aria-current="page">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">首页</span>
+      
+      
+    </span>
+  
+  
+  <span class="ui-collection__indicator"></span>
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;archives&#x2F;" title="归档">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="currentColor"><path d="M6.94028 2C7.35614 2 7.69326 2.32421 7.69326 2.72414V4.18487C8.36117 4.17241 9.10983 4.17241 9.95219 4.17241H13.9681C14.8104 4.17241 15.5591 4.17241 16.227 4.18487V2.72414C16.227 2.32421 16.5641 2 16.98 2C17.3958 2 17.733 2.32421 17.733 2.72414V4.24894C19.178 4.36022 20.1267 4.63333 20.8236 5.30359C21.5206 5.97385 21.8046 6.88616 21.9203 8.27586L22 9H2.92456H2V8.27586C2.11571 6.88616 2.3997 5.97385 3.09665 5.30359C3.79361 4.63333 4.74226 4.36022 6.1873 4.24894V2.72414C6.1873 2.32421 6.52442 2 6.94028 2Z"/><path d="M21.9995 14.0001V12.0001C21.9995 11.161 21.9963 9.66527 21.9834 9H2.00917C1.99626 9.66527 1.99953 11.161 1.99953 12.0001V14.0001C1.99953 17.7713 1.99953 19.6569 3.1711 20.8285C4.34267 22.0001 6.22829 22.0001 9.99953 22.0001H13.9995C17.7708 22.0001 19.6564 22.0001 20.828 20.8285C21.9995 19.6569 21.9995 17.7713 21.9995 14.0001Z" opacity=".5"/><path d="M18 17C18 17.5523 17.5523 18 17 18C16.4477 18 16 17.5523 16 17C16 16.4477 16.4477 16 17 16C17.5523 16 18 16.4477 18 17Z"/><path d="M18 13C18 13.5523 17.5523 14 17 14C16.4477 14 16 13.5523 16 13C16 12.4477 16.4477 12 17 12C17.5523 12 18 12.4477 18 13Z"/><path d="M13 17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17C11 16.4477 11.4477 16 12 16C12.5523 16 13 16.4477 13 17Z"/><path d="M13 13C13 13.5523 12.5523 14 12 14C11.4477 14 11 13.5523 11 13C11 12.4477 11.4477 12 12 12C12.5523 12 13 12.4477 13 13Z"/><path d="M8 17C8 17.5523 7.55228 18 7 18C6.44772 18 6 17.5523 6 17C6 16.4477 6.44772 16 7 16C7.55228 16 8 16.4477 8 17Z"/><path d="M8 13C8 13.5523 7.55228 14 7 14C6.44772 14 6 13.5523 6 13C6 12.4477 6.44772 12 7 12C7.55228 12 8 12.4477 8 13Z"/></g></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">归档</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" target="_blank" rel="noopener" href="https:&#x2F;&#x2F;github.com&#x2F;momijijin&#x2F;dsh-session-grove" title="插件仓库">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.162 19.487c.5.093.683-.217.683-.483v-1.87c-2.782.605-3.369-1.181-3.369-1.181c-.455-1.156-1.11-1.464-1.11-1.464c-.908-.62.069-.608.069-.608c1.004.07 1.532 1.03 1.532 1.03c.892 1.528 2.341 1.087 2.91.831c.09-.646.349-1.087.635-1.337c-2.22-.252-4.555-1.11-4.555-4.944c0-1.093.39-1.987 1.03-2.687c-.103-.253-.447-1.272.098-2.65c0 0 .84-.269 2.75 1.027A9.55 9.55 0 0 1 12 6.8c.85.004 1.705.115 2.503.337c1.909-1.296 2.747-1.027 2.747-1.027c.546 1.378.202 2.397.1 2.65c.64.7 1.027 1.594 1.027 2.687c0 3.843-2.34 4.689-4.566 4.936c.359.31.679.92.679 1.854v2.748c0 .269.18.582.688.483A10.002 10.002 0 0 0 12 2"/></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">插件仓库</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+</div>
+
+</nav>
+
+</div>
+    <div class="widgets widget-stack widget-stack--leftbar widget-stack--body"><div class="widget-instance widget-instance--markdown" data-widget-id="leftbar:0:npmstats" data-presentation="leftbar">
+<widget class="widget-wrapper slide-up markdown"><div class="widget-header dis-select"><span class="name">npm</span></div><div class="widget-body fs14"><div class="site-stats" id="npm-stats">加载中…</div>
+</div></widget>
+</div><div class="widget-instance widget-instance--recent" data-widget-id="leftbar:1:recent" data-presentation="leftbar">
+
+<widget class="widget-wrapper slide-up recent-widget">
+  
+    <div class="widget-header dis-select">
+      <span class="name">最近更新</span>
+      
+    </div>
+  
+  <div class="widget-body"><div class="ui-collection" data-layout="list" data-variant="nav" data-density="compact">
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E&#x2F;" title="使用说明">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">使</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">使用说明</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E4%BC%9A%E8%AF%9D%E5%BD%92%E7%BB%84&#x2F;" title="会话归组">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">会</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">会话归组</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E5%88%86%E7%BB%84%E9%85%8D%E7%BD%AE&#x2F;" title="分组配置">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">分</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">分组配置</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E5%A4%B4%E9%83%A8%E7%8A%B6%E6%80%81&#x2F;" title="头部状态">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">头</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">头部状态</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E5%88%86%E7%BB%84%E5%9F%BA%E7%A1%80&#x2F;" title="分组基础">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">分</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">分组基础</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;12&#x2F;%E8%AE%BE%E7%BD%AE%E4%B8%8E%20AI%20%E6%8E%A7%E5%88%B6&#x2F;" title="设置与 AI 控制">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">设</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">设置与 AI 控制</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;12&#x2F;%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98&#x2F;" title="常见问题">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">常</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">常见问题</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;12&#x2F;%E6%95%B0%E6%8D%AE%E3%80%81%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D&#x2F;" title="数据、备份与恢复">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">数</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">数据、备份与恢复</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E6%90%9C%E7%B4%A2%E4%B8%8E%E7%AD%9B%E9%80%89&#x2F;" title="搜索与筛选">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">搜</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">搜索与筛选</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;2026&#x2F;11&#x2F;11&#x2F;%E5%AE%89%E8%A3%85%E4%B8%8E%2060%20%E7%A7%92%E4%B8%8A%E6%89%8B&#x2F;" title="安装与 60 秒上手">
+  
+  
+  <span class="ui-collection__initial" aria-hidden="true">安</span>
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">安装与 60 秒上手</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+</div></div>
+  
+</widget>
+
+
+</div></div>
+  </div>
+  <footer class="site-region__footer">
+    
+    <div class="site-region__system ui-collection" data-layout="inline" data-variant="nav" data-density="compact">
+      <div class="site-region__settings"><div class="widget-instance widget-instance--settings" data-widget-id="leftbar:fixed:settings" data-presentation="leftbar" data-leftbar-rail>
+<a class="settings-widget ui-collection__item ui-interactive card-hover card-hover--spotlight" href="&#x2F;dsh-session-grove-docs-site&#x2F;settings&#x2F;" data-profile-provider="" data-profile-identity-enabled="false" data-profile-fallback-avatar="&#x2F;dsh-session-grove-docs-site&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;logo.png" data-settings-placement="leftbar" data-settings-label="设置" aria-label="设置" title="设置">
+  <span class="settings-widget__avatar" aria-hidden="true">
+    <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12.4277 2C11.3139 2 10.2995 2.6007 8.27081 3.80211L7.58466 4.20846C5.55594 5.40987 4.54158 6.01057 3.98466 7C3.42773 7.98943 3.42773 9.19084 3.42773 11.5937V12.4063C3.42773 14.8092 3.42773 16.0106 3.98466 17C4.54158 17.9894 5.55594 18.5901 7.58466 19.7915L8.27081 20.1979C10.2995 21.3993 11.3139 22 12.4277 22C13.5416 22 14.5559 21.3993 16.5847 20.1979L17.2708 19.7915C19.2995 18.5901 20.3139 17.9894 20.8708 17C21.4277 16.0106 21.4277 14.8092 21.4277 12.4063V11.5937C21.4277 9.19084 21.4277 7.98943 20.8708 7C20.3139 6.01057 19.2995 5.40987 17.2708 4.20846L16.5847 3.80211C14.5559 2.6007 13.5416 2 12.4277 2Z" clip-rule="evenodd" opacity=".5"/><path d="M12.4277 8.25C10.3567 8.25 8.67773 9.92893 8.67773 12C8.67773 14.0711 10.3567 15.75 12.4277 15.75C14.4988 15.75 16.1777 14.0711 16.1777 12C16.1777 9.92893 14.4988 8.25 12.4277 8.25Z"/></g></svg></span>
+  </span>
+  <span class="settings-widget__name ui-collection__title">设置</span>
+</a>
+</div></div>
+      <button type="button" class="leftbar-state-toggle ui-collection__item ui-interactive card-hover card-hover--spotlight is-icon-only" aria-label="Collapse leftbar" aria-expanded="true" data-shell-action="toggle-leftbar"><span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M3.172 4.172C2 5.343 2 7.229 2 11v2c0 3.771 0 5.657 1.172 6.828S6.229 21 10 21h5V3h-5C6.229 3 4.343 3 3.172 4.172" clip-rule="evenodd" opacity=".5"/><path fill="currentColor" d="M5.5 9.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zm1 4a.75.75 0 0 0 0 1.5h4a.75.75 0 0 0 0-1.5zM22 13v-2c0-3.771 0-5.657-1.172-6.828c-.974-.975-3.192-1.139-5.828-1.166v17.988c2.636-.027 4.854-.191 5.828-1.166C22 18.657 22 16.771 22 13"/></svg></span></button>
+    </div>
+  </footer></div></div></aside>
+<main data-stellar-runtime-region class="site-main" id="main">
+
+
+<div class="article-banner-wrap slide-up"><div class="article banner top" style="--bg-url:url('/dsh-session-grove-docs-site/images/covers/v0.4.0-beta.62.webp')"><img class="lazy bg" data-src="/dsh-session-grove-docs-site/images/covers/v0.4.0-beta.62.webp" onerror="this.onerror&#x3D;null;this.src&#x3D;&quot;&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;stellar-error.491ee870f4940739.svg&quot;">
+  <div class="content" data-text-adaptive="split">
+    <div class="banner-mask banner-mask-top" aria-hidden="true"></div><div class="banner-mask banner-mask-bottom" aria-hidden="true"></div>
+    <div class="top bread-nav footnote"><div class="top-row"><div class="left" id="breadcrumb"><a class="cap breadcrumb" href="/dsh-session-grove-docs-site/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/dsh-session-grove-docs-site/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/dsh-session-grove-docs-site/categories/%E7%89%88%E6%9C%AC%E6%9B%B4%E6%96%B0/">版本更新</a>
+</div></div><div class="meta-row">
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-11-11T04:00:00.000Z">2026-11-11</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-11-11T14:30:00.000Z">2026-11-11</time></span></div>
+</div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>0.4.0-beta.62：分组归档与递归结构锁</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div></div>
+<article class="md-text content slide-up"><p>归档从「会话」扩展到了「分组」：整组连同子分组一起收进归档，视图里可以按三态筛选，归档后的整棵子树进入只读<mark class="tag-plugin colorful mark" color="theme">结构锁</mark>。它不会级联修改会话的归档状态，也不改 <code>DOC_VERSION</code>；搜索和头部计数共用同一套可见性规则。</p>
+<div class="tag-plugin colorful note" color="blue"><div class="title">摘要</div><div class="body"><p>① <code>Group.archived</code> 是新增可选布尔，缺失读 <code>false</code>，<code>DOC_VERSION</code> 保持 1。<br>② 视图选项新增分组三态 <code>hidden | all | only</code>，与会话三态独立。<br>③ 生效归档的整棵子树冻结；提交前不变量拦截结构改动，失败返回 <code>archive-frozen</code>（409）。</p></div></div>
+
+<h2 id="改了什么"><a href="#改了什么" class="headerlink" title="改了什么"></a>改了什么</h2><p>核心是三条：分组自己可以归档、归档范围按整棵子树计算、提交前用不变量守住结构。</p>
+<ul>
+<li><strong>分组归档</strong>：分组新增归档标记，整组连子分组一起收进归档。</li>
+<li><strong>第二套三态</strong>：视图选项多出分组归档三态，与会话三态各自独立。</li>
+<li><strong>递归结构锁</strong>：生效归档的整棵子树冻结，结构类操作一律禁用。</li>
+<li><strong>归档开关本身永远合法</strong>：归档不级联到会话或子分组，容器里的会话仍可单独操作。</li>
+<li><strong>提交前状态不变量</strong>：以提交前的文档比对，归档前已存在的组只允许改归档标记。</li>
+<li><strong>拖拽与提交同一套规则</strong>：拖拽判定与提交校验共用谓词，非法落点直接拒绝。</li>
+<li><strong>宿主与控制接口</strong>：宿主写入前校验并继承缺失标记，违约返回明确错误。</li>
+<li><strong>界面与语言资源</strong>：两段三态与锁定样式就位，各语言词典同步补齐。</li>
+</ul>
+<div class="tag-plugin table table-scroll"><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>旧版（0.4.0-beta.61）</th>
+<th>新版（0.4.0-beta.62）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可归档对象</td>
+<td>只有会话</td>
+<td>会话与分组（整棵子树）</td>
+</tr>
+<tr>
+<td>分组筛选</td>
+<td>只有会话三态</td>
+<td>会话、分组两段独立三态</td>
+</tr>
+<tr>
+<td>归档组结构操作</td>
+<td>全部可用</td>
+<td>整棵子树只读，结构项置灰</td>
+</tr>
+<tr>
+<td>搜索命中归档组</td>
+<td>—（尚无分组归档）</td>
+<td>提示 +「显示已归档分组」按钮</td>
+</tr>
+<tr>
+<td>归档状态存储</td>
+<td>无该字段</td>
+<td><code>Group.archived</code> 可选，<code>DOC_VERSION</code> 保持 1</td>
+</tr>
+<tr>
+<td>语言资源</td>
+<td>331 键</td>
+<td>385 键</td>
+</tr>
+</tbody></table>
+</div>
+
+<div class="tag-plugin colorful note" color="warning"><div class="title">注意</div><div class="body"><p>「取消归档 + 编辑」不能在同一次提交里完成，必须拆成两次；「归档 + 编辑」是合法的。归档开关本身不会级联到会话或子分组。</p></div></div>
+
+<details class="tag-plugin colorful folding"><summary><p>展开：契约、筛选与锁的实现细节</p>
+</summary><div class="body"><ul> <li><strong>字段与校验</strong>：<code>Group.archived</code> 是新增的可选布尔值，缺失按 <code>false</code> 读，非布尔值会被校验拒绝（<code>group-archived-type:&lt;id&gt;</code>）；生效状态是 <code>effectiveArchived = own || any archived ancestor</code>，<code>archivedBy</code> 记录最近的归档祖先，只派生、不持久化；归档标记按配置独立保存，不写进配置注册表；生效归档按祖先链计算，损坏文档的遍历做了防环。</li> <li><strong>三态语义</strong>：<code>hidden</code> 剪掉归档子树但保留仍然存活的祖先；<code>all</code> 全部渲染；<code>only</code> 只渲染生效归档的组，以及通向它们的「仅标题」祖先，同时隐藏未分组；三态存储在 <code>dsh-session-grove.archive.groups.v1</code>，组内仍按会话筛选过滤。</li> <li><strong>结构锁范围</strong>：生效归档的整棵子树被冻结，标题、图标、颜色、<code>colorHex</code>、父级、兄弟序号、<code>sessionIds</code> 顺序和直接子组顺序都不能改；归档组本身、以及含归档后代的组不能移动或删除；往归档目标里插入、或间接移动归档锚点的兄弟序号，都会被拒绝；页面上的锁/包含归档徽标统一为 16px。</li> <li><strong>会话级操作</strong>：归档开关本身永远合法，不级联到会话或子分组，也不会调用 <code>archiveSession</code>；容器里的会话仍可打开（自身未归档时）、改名、切换归档、复制 ID；拖拽、重排、移动和分叉禁用，并给出可见原因。</li> <li><strong>提交前比较</strong>：以提交前的文档为准严格比较，归档前就存在的组在本次提交里只允许改自己的 <code>archived</code>；比较使用归一化值（<code>color</code>/<code>colorHex</code>/图标/<code>archived === true</code>），宿主归一化不会误报；<code>取消归档 + 编辑</code> 必须拆两次，<code>归档 + 编辑</code> 合法。</li> <li><strong>拖拽谓词</strong>：<code>checkSessionDrop</code> 与 <code>checkGroupDrop</code>/<code>applyGroupDrop</code> 共用规则；槽位按完整文档和稳定 id 解析，归档主体拒绝且不冒泡；非法目标不画占位符，部分剪枝不会放行提交阶段会拒绝的落点。</li> <li><strong>宿主写入</strong>：<code>store.commit</code> 读取当前文档、按 group id 继承缺失的入站 <code>archived</code>，避免旧客户端整文档写入时静默取消归档；写前校验后再应用 before-state 不变量。</li> <li><strong>控制接口</strong>：控制 API 新增 <code>group.archive { groupId, archived }</code>，同值写入是 <code>no-change</code>，类型/未知字段错误仍是 422；<code>/commit</code> 映射为 409 <code>{ ok:false, code:'archive-frozen', reason, groupId, field }</code>；<code>state.groups[]</code> 暴露三个归档字段。</li> <li><strong>界面细节</strong>：视图选项的两段三态都带标题，选择后浮层保持打开（Escape/点外部关闭），头部按钮同步两个筛选值；组行带 <code>data-archived</code>/<code>data-path-only</code>/<code>data-contains-archived</code>/<code>data-structural-locked</code>；灰显按整棵子树合成（嵌套组与会话行重置透明度，<code>pathOnly</code> 不灰）；归档确认弹窗、toast、带原因的禁用项、以及 <code>archive-frozen</code> 失败映射都已接好。</li> <li><strong>同批 UI 补丁</strong>：归档确认弹窗新增默认关闭的「不再提示」、「恢复默认显示」改用紧凑的圆形还原图标。</li> <li><strong>语言资源</strong>：19 种词典各新增 54 个键（331 → 385），其中 13 个是 CLDR 复数对象；归档三态、菜单、弹窗、拖拽、toast、空状态与搜索文案都已覆盖。</li> </ul> </div></details>
+
+<h2 id="怎么用"><a href="#怎么用" class="headerlink" title="怎么用"></a>怎么用</h2><h3 id="1-在分组菜单里归档整组"><a href="#1-在分组菜单里归档整组" class="headerlink" title="1. 在分组菜单里归档整组"></a>1. 在分组菜单里归档整组</h3><ol>
+<li>打开任意分组的菜单，选择「归档分组」。</li>
+<li>核对确认弹窗：整组及子分组变为只读，不会修改会话的归档状态，分组也可能被当前筛选隐藏。</li>
+<li>如不想再看到确认，勾选默认关闭的「不再提示」；取消或失败不会记住这个选择。</li>
+</ol>
+<p>这一步把整组连同子分组收进归档，下图标出菜单入口与目标分组。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/dsh-session-grove-docs-site/images/v0.4.0-beta.62/01-archive-menu.webp" alt="0.4.0-beta.62 分组菜单中的「归档分组」：红框标出菜单项与目标分组「产品设计」" onerror="this.onerror&#x3D;null;this.src&#x3D;&quot;&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;stellar-error.491ee870f4940739.svg&quot;"></p>
+<h3 id="2-视图选项里的分组归档三态"><a href="#2-视图选项里的分组归档三态" class="headerlink" title="2. 视图选项里的分组归档三态"></a>2. 视图选项里的分组归档三态</h3><ol>
+<li>打开视图选项，找到「会话」与「分组」两段独立的三态。</li>
+<li>在分组段选择「隐藏已归档分组 / 全部分组（显示已归档）/ 仅显示已归档分组」。</li>
+<li>选择后浮层保持打开，可以连续设好两段；头部按钮同步显示两个筛选值。</li>
+</ol>
+<p>这一步设置分组归档的可见性，下图对比旧版只有会话三态、新版多出分组三态。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/dsh-session-grove-docs-site/images/v0.4.0-beta.62/02-tristate-compare.webp" alt="左图 0.4.0-beta.61 的视图选项只有会话归档三态；右图 0.4.0-beta.62 增加分组归档三态，会话与分组两段独立" onerror="this.onerror&#x3D;null;this.src&#x3D;&quot;&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;stellar-error.491ee870f4940739.svg&quot;"></p>
+<h3 id="3-归档组灰显，结构操作被锁"><a href="#3-归档组灰显，结构操作被锁" class="headerlink" title="3. 归档组灰显，结构操作被锁"></a>3. 归档组灰显，结构操作被锁</h3><ol>
+<li>归档组整行灰显并带锁标。</li>
+<li>结构类菜单项（新建会话、新建子分组、重命名分组、更换图标、修改颜色、移到其他分组、上移/下移、删除分组）全部置灰，点击只提示「归档分组，此操作已锁定」。</li>
+<li>「取消归档」始终可用。</li>
+<li>组内会话仍可打开、改名、切换归档状态、复制 Session ID；拖拽、重排、移动、分叉被禁用。</li>
+</ol>
+<p>这一步确认归档组的<mark class="tag-plugin colorful mark" color="theme">只读范围</mark>，下图对比旧版普通行与新版锁定状态。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/dsh-session-grove-docs-site/images/v0.4.0-beta.62/03-lock-compare.webp" alt="左图 0.4.0-beta.61 同一分组显示为普通行且菜单全部可用；右图 0.4.0-beta.62 归档组灰显并带锁标，结构项置灰，仅「取消归档」可用" onerror="this.onerror&#x3D;null;this.src&#x3D;&quot;&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;stellar-error.491ee870f4940739.svg&quot;"></p>
+<h3 id="4-搜索命中隐藏分组时给出显式动作"><a href="#4-搜索命中隐藏分组时给出显式动作" class="headerlink" title="4. 搜索命中隐藏分组时给出显式动作"></a>4. 搜索命中隐藏分组时给出显式动作</h3><ol>
+<li>搜索只命中被分组筛选隐藏的会话时，列表显示「1 个匹配会话被隐藏在已归档分组中」。</li>
+<li>点「显示已归档分组」，分组筛选切到能看见归档组的状态。</li>
+<li>命中的会话随后出现在结果里；头部计数与搜索共用同一套可见性，隐藏组里的会话不会被算进未分组。</li>
+</ol>
+<p>这一步处理搜索命中隐藏内容的情况，下图是提示行与「显示已归档分组」按钮。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/dsh-session-grove-docs-site/images/v0.4.0-beta.62/04-search-hidden.webp" alt="0.4.0-beta.62 搜索「嵌套分组上限」命中已归档分组中的会话：提示行与「显示已归档分组」按钮" onerror="this.onerror&#x3D;null;this.src&#x3D;&quot;&#x2F;dsh-session-grove-docs-site&#x2F;images&#x2F;stellar-error.491ee870f4940739.svg&quot;"></p>
+<h2 id="兼容性"><a href="#兼容性" class="headerlink" title="兼容性"></a>兼容性</h2><p>分组归档是 <code>DOC_VERSION</code> 1 之上的增量契约，旧文档与旧宿主都有明确的降级路径。</p>
+<ul>
+<li>旧文档：<code>archived</code> 缺失读 <code>false</code>，不拒绝、不隔离。</li>
+<li>旧客户端 + 新宿主：宿主按 id 继承缺失标记，避免整文档写入丢状态。</li>
+<li>新客户端 + 旧宿主：字段通常能保留，但旧宿主不显示归档状态、不执行结构锁，只有客户端侧守卫生效。</li>
+<li>备份恢复：按原样写入（恢复路径的显式例外），恢复到归档前状态是允许的。</li>
+<li>降级：不认识该字段的宿主保留 JSON 中的 <code>archived</code>、隐藏归档 UI、跳过锁；重新升级后无需迁移即可恢复。</li>
+</ul>
+<h2 id="内部改动"><a href="#内部改动" class="headerlink" title="内部改动"></a>内部改动</h2><details class="tag-plugin colorful folding"><summary><p>展开：增量契约与决策记录</p>
+</summary><div class="body"><p>分组归档是 <code>DOC_VERSION</code> 1 之上的增量契约：<code>archived</code> 缺失读 <code>false</code>，旧文档不拒绝、不隔离；写入前按 group id 继承缺失标记，再执行 before-state 不变量。</p> <p>违约返回 <code>archive-frozen</code>，不写入、不涨 revision；决策记录在 <code>docs/adr/0004-group-archive-freeze.md</code>，冻结的 <code>docs/CONTRACTS.md</code> 未修改。</p> </div></details>
+</article>
+
+
+
+
+<div class="article-footer slide-up">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section></div>
+
+<div class="related-wrap slide-up" id="read-next"><section class="body"><div class="item" id="prev"><div class="note"><svg class="icon" viewBox="0 0 1 1" data-icon="default:arrow-left" aria-hidden="true"></svg> 较新文章</div><a href="/dsh-session-grove-docs-site/2026/11/11/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E/">使用说明</a></div><div class="item" id="next"><div class="note">较早文章 <svg class="icon" viewBox="0 0 1 1" data-icon="default:arrow-right" aria-hidden="true"></svg></div><a href="/dsh-session-grove-docs-site/2026/11/10/0.4.0-beta.60-%E5%88%86%E7%BB%84%E9%85%8D%E7%BD%AE/">0.4.0-beta.60：分组配置</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer slide-up footnote"><hr><div class="text"><p>dsh-session-grove 使用说明 · 主题 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar</a></p>
+</div></footer>
+</main>
+<aside data-stellar-runtime-region id="rightbar-region" class="site-region site-region--rightbar" data-region="rightbar" aria-label="Rightbar"><div class="site-region__surface ui-drawer-surface"><div class="site-region__viewport"><div class="widgets widget-stack widget-stack--rightbar widget-stack--rightbar"><div class="widget-instance widget-instance--toc" data-widget-id="rightbar:1:toc" data-presentation="rightbar">
+
+
+<widget class="widget-wrapper slide-up toc" id="data-toc" collapse="false">
+  
+    <div class="widget-header dis-select">
+      <span class="name">本文目录</span>
+      <button type="button" class="cap-action ui-interactive card-hover card-hover--spotlight" data-shell-action="toggle-toc" aria-label="Toggle table of contents" aria-pressed="false"><span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></span></button>
+    </div>
+  
+  <div class="widget-body"><ol class="toc ui-collection-adapter"><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#%E6%94%B9%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-text">改了什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#%E6%80%8E%E4%B9%88%E7%94%A8"><span class="toc-text">怎么用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link ui-interactive" href="#1-%E5%9C%A8%E5%88%86%E7%BB%84%E8%8F%9C%E5%8D%95%E9%87%8C%E5%BD%92%E6%A1%A3%E6%95%B4%E7%BB%84"><span class="toc-text">1. 在分组菜单里归档整组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link ui-interactive" href="#2-%E8%A7%86%E5%9B%BE%E9%80%89%E9%A1%B9%E9%87%8C%E7%9A%84%E5%88%86%E7%BB%84%E5%BD%92%E6%A1%A3%E4%B8%89%E6%80%81"><span class="toc-text">2. 视图选项里的分组归档三态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link ui-interactive" href="#3-%E5%BD%92%E6%A1%A3%E7%BB%84%E7%81%B0%E6%98%BE%EF%BC%8C%E7%BB%93%E6%9E%84%E6%93%8D%E4%BD%9C%E8%A2%AB%E9%94%81"><span class="toc-text">3. 归档组灰显，结构操作被锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link ui-interactive" href="#4-%E6%90%9C%E7%B4%A2%E5%91%BD%E4%B8%AD%E9%9A%90%E8%97%8F%E5%88%86%E7%BB%84%E6%97%B6%E7%BB%99%E5%87%BA%E6%98%BE%E5%BC%8F%E5%8A%A8%E4%BD%9C"><span class="toc-text">4. 搜索命中隐藏分组时给出显式动作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#%E5%85%BC%E5%AE%B9%E6%80%A7"><span class="toc-text">兼容性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#%E5%86%85%E9%83%A8%E6%94%B9%E5%8A%A8"><span class="toc-text">内部改动</span></a></li></ol></div>
+  <div class="widget-footer"><a class="top ui-interactive" onclick="util.scrollTop()"><span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="currentColor" d="M20.536 3.464C22 4.93 22 7.286 22 12s0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12s0-7.071 1.464-8.536C4.93 2 7.286 2 12 2s7.071 0 8.535 1.464" opacity=".5"/><path fill="currentColor" d="M9.53 12.03a.75.75 0 0 1-1.06-1.06l3-3a.75.75 0 0 1 1.06 0l3 3a.75.75 0 1 1-1.06 1.06L12 9.56z"/><path fill="currentColor" d="M9.53 16.03a.75.75 0 0 1-1.06-1.06l3-3a.75.75 0 0 1 1.06 0l3 3a.75.75 0 1 1-1.06 1.06L12 13.56z"/></svg></span><span>回到顶部</span></a></div>
+</widget>
+
+
+</div></div></div></div></aside>
+</div><button type="button" class="site-scrim" data-shell-action="dismiss-drawer" aria-label="Close navigation" tabindex="-1"></button><div data-stellar-runtime-region class="site-dock" role="group" aria-label="Layout panels">
+  <button type="button" class="site-dock__button site-dock__button--rightbar ui-interactive" aria-label="Open rightbar" aria-controls="rightbar-region" aria-expanded="false" data-shell-action="toggle-rightbar-drawer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type="button" class="site-dock__button site-dock__button--leftbar ui-interactive" aria-label="Open leftbar" aria-controls="leftbar-region" aria-expanded="false" data-shell-action="toggle-leftbar-drawer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+
+<dialog data-stellar-runtime-region class="search-dialog" id="site-search-dialog" aria-labelledby="site-search-title">
+  <div class="search-dialog__panel search-wrapper" id="site-search-wrapper" searching="false">
+    <div class="search-dialog__header">
+      <div class="search-form" role="search">
+        <span class="search-button" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Adapted from Google Material Icons by Material Design Authors - https://github.com/material-icons/material-icons/blob/master/LICENSE --><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3M3 13h3M3 18h8M16.83 13.83l3.76 3.76"/><circle cx="14" cy="11" r="4"/></g></svg></span>
+        <input type="search" class="search-input" id="site-search-input" aria-labelledby="site-search-title" placeholder="搜索">
+      </div>
+      <button type="button" class="search-dialog__close" data-shell-action="close-search" aria-label="关闭搜索">×</button>
+    </div>
+    
+      <div class="search-dialog__scope" role="radiogroup" aria-labelledby="site-search-title" hidden>
+        <label class="search-dialog__scope-option" data-search-scope-option="all">
+          <input class="ui-radio" type="radio" name="site-search-scope" value="all">
+          <span>全站</span>
+        </label>
+        <label class="search-dialog__scope-option" data-search-scope-option="blog" hidden>
+          <input class="ui-radio" type="radio" name="site-search-scope" value="blog">
+          <span>博客</span>
+        </label>
+        <label class="search-dialog__scope-option" data-search-scope-option="current" hidden>
+          <input class="ui-radio" type="radio" name="site-search-scope" value="current">
+          <span data-search-scope-current-label></span>
+        </label>
+      </div>
+    
+    <h2 class="search-dialog__title" id="site-search-title">站内搜索</h2>
+    <div class="search-result" id="site-search-result"></div>
+    <div class="search-no-result">没有找到内容！</div>
+  </div>
+</dialog>
+</div><div class="site-scripts">
+<script data-stellar-script="core" src="/dsh-session-grove-docs-site/js/stellar-icons.js?v=bdd3869026df0c56"></script>
+
+<script data-stellar-script="defines">
+  window.canonical = window.stellarClientData.canonical;
+  const ctx = window.stellarClientData.ctx;
+  window.canonical.param = {permalink: "https://momijijin.github.io/2026/11/11/0.4.0-beta.62-%E5%88%86%E7%BB%84%E5%BD%92%E6%A1%A3%E4%B8%8E%E9%80%92%E5%BD%92%E7%BB%93%E6%9E%84%E9%94%81/", checklink: ctx.services.video.js};
+  ctx.date_suffix = {"just":"刚刚","min":"分钟前","hour":"小时前","day":"天前"};
+  if (ctx.search) Object.assign(ctx.search, {"more":"更多","no_more":"没有更多了"});
+  const def = window.stellarClientData.def;
+  window.ctx = ctx;
+  window.def = def;
+</script>
+
+
+<!-- core: 迁移期 DOM/资源兼容工具；Extension 注册与生命周期由 ESM runtime 所有 -->
+<script data-stellar-script="core" src="/dsh-session-grove-docs-site/js/utils.js?v=2.0.0"></script>
+<script data-stellar-script="core" src="/dsh-session-grove-docs-site/js/main.js?v=2.0.0" defer></script>
+<script data-stellar-script="core" defer src="/dsh-session-grove-docs-site/js/profile.js?v=2.0.0"></script>
+
+
+
+
+
+<script data-stellar-script="core" type="application/json" id="stellar-runtime-config">{"version":1,"root":"/dsh-session-grove-docs-site/","policy":{"cache":{"enabled":true,"defaultTtl":3600,"ttl":{"giscus":600,"waline":600,"artalk":600,"memos":600,"memos-user":86400,"sites":86400,"friends":86400,"friends_and_posts":86400,"siteinfo":86400},"maxEntries":200},"request":{"retries":2,"timeoutMs":5000,"idleTimeoutMs":3000,"maxCacheEntryBytes":204800},"features":{"codeCopyToastMs":2500},"providers":{"linkPrefetch":"flying_pages","lightbox":"fancybox","diagrams":"mermaid"}},"extensions":[{"id":"pin-slider","module":"/js/runtime/extensions/pin-slider.js","scope":"region","when":{"selector":".pin-slider"},"config":{}},{"id":"page-controls","module":"/js/runtime/extensions/page-controls.js","scope":"region","when":{"always":true},"config":{"highlight":"/js/search/highlight.js","tagtree":"/js/tagtree.js"}},{"id":"partial-navigation","module":"/js/runtime/extensions/partial-navigation.js","scope":"document","when":{"always":true},"config":{}},{"id":"search","module":"/js/runtime/extensions/search.js","scope":"document","when":{"selector":".search-input"},"config":{"provider":"local","options":{"scope":"all","includeContent":true,"cacheTtlSeconds":3600},"assets":{"client":null,"provider":"/js/search/local-search.js","shortcut":"/js/search/shortcut.js"}}},{"id":"hero-parallax","module":"/js/runtime/extensions/hero-parallax.js","scope":"region","when":{"selector":".wiki-hero"},"config":{}},{"id":"hero-effect","module":"/js/runtime/extensions/hero-effect.js","scope":"region","when":{"selector":"canvas[data-hero-effect]"},"config":{}},{"id":"lazy-loading","module":"/js/runtime/extensions/lazy-loading.js","scope":"document","when":{"always":true},"config":{"asset":"/vendor/lazyload/lazyload.min.js"}},{"id":"deferred-icons","module":"/js/runtime/extensions/deferred-icons.js","scope":"region","when":{"selector":"svg.icon[data-icon]"},"config":{}},{"id":"dropdown","module":"/js/runtime/extensions/dropdown.js","scope":"region","when":{"selector":"details.dropdown"},"config":{}},{"id":"services","module":"/js/runtime/extensions/services.js","scope":"region","when":{"selector":"#artalk_container, #twikoo_container, #waline_container, .data-service, [class*='ds-'], a[cardlink], a[data-md-link][data-siteinfo-api], .site-card [data-siteinfo-api], .voice\u003eaudio, .video\u003evideo, .chat-file"},"config":{"marked":"/vendor/marked/marked.umd.min.js"}},{"id":"settings","module":"/js/runtime/extensions/settings.js","scope":"region","when":{"selector":".settings-page"},"config":{}},{"id":"link-prefetch","module":"/js/runtime/extensions/link-prefetch.js","scope":"document","when":{"always":true},"config":{"asset":"/vendor/flying-pages/flying-pages.min.js"}},{"id":"reveal","module":"/js/runtime/extensions/reveal.js","scope":"region","when":{"selector":".slide-up"},"config":{"enabled":true,"duration":800,"interval":200,"distance":8,"blur":4}},{"id":"code-copy","module":"/js/runtime/extensions/code-copy.js","scope":"region","when":{"selector":".code"},"config":{"assets":{"js":"/js/plugins/copycode.js"},"messages":{"label":"复制","copied":"复制成功","denied":"未获得剪贴板权限","unsupported":"当前浏览器不支持剪贴板或页面不是 HTTPS"}}},{"id":"adaptive-text","module":"/js/runtime/extensions/adaptive-text.js","scope":"region","when":{"selector":"[data-text-adaptive]"},"config":{"assets":{"colorJs":"/js/color.js","js":"/js/plugins/adaptive-text.js"}}},{"id":"swiper","module":"/js/runtime/extensions/swiper.js","scope":"region","when":{"selector":"#swiper-api"},"config":{"assets":{"localCss":"/css/plugins/swiper.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js","css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css"}}}]}</script>
+<script data-stellar-script="core" type="module" src="/dsh-session-grove-docs-site/js/runtime/index.js?v=2.0.0&runtime=1"></script>
+
+
+<!-- inject -->
+<script src="/dsh-session-grove-docs-site/js/site-stats.js"></script>
+<script src="/dsh-session-grove-docs-site/js/lightbox.js"></script>
+
+
+<script data-stellar-script="core" defer src="/dsh-session-grove-docs-site/js/navigation-init.js?v=2.0.0"></script>
+</div></body></html>
+
