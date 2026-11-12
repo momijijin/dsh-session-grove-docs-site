@@ -1,8 +1,15 @@
 /**
- * 左侧栏 npm 下载统计卡片。
+ * 左侧栏统计：品牌区 GitHub 数据（stars / forks / latest tag）+ npm 下载卡片。
  *
- * 数据由 tools/npm-stats.mjs 生成到站点根目录的 site_stats.json；这里只做拉取与渲染，
- * 不依赖任何第三方库。状态约定：
+ * 两类数据都由 tools/npm-stats.mjs 在构建前抓取并写入站点根目录的 site_stats.json；
+ * 浏览器只读这份本地 JSON，不再实时请求 api.github.com
+ * （未认证限流 60 次/小时/IP，会 403 导致三个数值空白）。
+ *
+ * 品牌区统计约定：
+ *   有 github 且 stars / forks / tag 齐全 → 在 .brand-title 之后渲染三项；
+ *   缺失任一字段 → 不渲染统计块（不留空壳）。
+ *
+ * npm 卡片状态约定：
  *   available: false            → 「npm 包尚未发布」
  *   stale: true                 → 照常显示缓存值，并在时间后标注 cached
  *   请求失败 / 数值缺失          → 「下载统计暂不可用」
@@ -39,35 +46,8 @@
     return siteRoot() + String(path).replace(/^\/+/, '');
   }
 
-  // 品牌区第三个统计项默认渲染为 `tag`，链接指向仓库 /tags。
-  // 这里把链接改到 GitHub Releases、文案改成 `latest tag`：
-  // 链接每次都写（幂等），文案只在仍是默认值时改，避免覆盖主题的其他状态；失败静默。
-  var RELEASES_URL = 'https://github.com/momijijin/dsh-session-grove/releases';
-  try {
-    var tagValue = document.getElementById('latest-tag-name');
-    var tagLink = tagValue && tagValue.closest ? tagValue.closest('a') : null;
-    if (!tagLink) {
-      tagLink = document.querySelector('.brand-stats a[href*="/tags"]') ||
-        document.querySelector('.brand-stats > .brand-stat:last-child');
-    }
-    if (tagLink) {
-      tagLink.setAttribute('href', RELEASES_URL);
-      var tagLabel = tagLink.querySelector('.brand-stat__label');
-      if (tagLabel && tagLabel.textContent.trim() === 'tag') {
-        tagLabel.textContent = 'latest tag';
-      }
-    }
-  } catch (error) {
-    // 标签与链接只是展示文案，取不到或浏览器不支持时忽略。
-  }
-
+  var GITHUB_URL = 'https://github.com/momijijin/dsh-session-grove';
   var NPM_URL = 'https://www.npmjs.com/package/dsh-session-grove';
-  var container = document.getElementById('npm-stats');
-  if (!container) return;
-
-  function setMessage(text) {
-    container.textContent = text;
-  }
 
   function isNumber(value) {
     return typeof value === 'number' && Number.isFinite(value);
@@ -93,13 +73,65 @@
       ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
   }
 
-  function render(stats) {
+  // 品牌区统计：DOM 顺序固定为 stars → forks → tag。
+  // css/custom.css 用 .brand-stat:last-child + order:-1 把最后一项 tag 提到第一行独占整行，
+  // 所以 tag 必须始终是最后一个 .brand-stat。
+  function renderBrandStats(github) {
+    if (!github || typeof github !== 'object') return;
+    if (!isNumber(github.stars) || !isNumber(github.forks)) return;
+    if (typeof github.tag !== 'string' || github.tag.trim() === '') return;
+
+    var header = document.querySelector('.site-region--leftbar .brand-header--regular') ||
+      document.querySelector('.brand-header--regular');
+    if (!header) return;
+
+    var title = header.querySelector('.brand-title');
+    if (!title || !title.parentNode) return;
+    // 主题自带的 ghrepo 已关闭；这里再做一次去重，避免脚本被重复引入时出现两块
+    if (header.querySelector('.brand-stats')) return;
+
+    var block = document.createElement('div');
+    block.className = 'brand-stats';
+
+    [
+      { value: formatNumber(github.stars), label: 'stars', href: GITHUB_URL + '/stargazers' },
+      { value: formatNumber(github.forks), label: 'forks', href: GITHUB_URL + '/forks' },
+      { value: github.tag, label: 'latest tag', href: GITHUB_URL + '/releases' }
+    ].forEach(function (item) {
+      var link = document.createElement('a');
+      link.className = 'brand-stat ui-interactive';
+      link.href = item.href;
+      link.target = '_blank';
+      link.rel = 'noopener';
+
+      var value = document.createElement('span');
+      value.className = 'brand-stat__value';
+      value.textContent = item.value;
+
+      var label = document.createElement('span');
+      label.className = 'brand-stat__label';
+      label.textContent = item.label;
+
+      link.appendChild(value);
+      link.appendChild(label);
+      block.appendChild(link);
+    });
+
+    // 插到 .brand-title 之后；.brand-title 在 .brand-wrap 内，保持与主题原统计块同层
+    title.parentNode.insertBefore(block, title.nextSibling);
+  }
+
+  var container = document.getElementById('npm-stats');
+
+  function renderNpmStats(stats) {
+    if (!container) return;
+
     if (stats && stats.available === false) {
-      setMessage('npm 包尚未发布');
+      container.textContent = 'npm 包尚未发布';
       return;
     }
     if (!stats || !isNumber(stats.weekly) || !isNumber(stats.monthly) || !isNumber(stats.total)) {
-      setMessage('下载统计暂不可用');
+      container.textContent = '下载统计暂不可用';
       return;
     }
 
@@ -146,8 +178,11 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
     })
-    .then(render)
+    .then(function (stats) {
+      renderBrandStats(stats && stats.github);
+      renderNpmStats(stats);
+    })
     .catch(function () {
-      setMessage('下载统计暂不可用');
+      if (container) container.textContent = '下载统计暂不可用';
     });
 })();
