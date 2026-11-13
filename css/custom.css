@@ -1,94 +1,254 @@
-/* 左栏品牌统计：latest tag 独占第一行，stars / forks 在第二行等分。
-   主题按 stars → forks → tag 的 DOM 顺序渲染三列 grid，这里改为可换行 flex：
-   最后一项（版本 tag，含 #latest-tag-name）用 order 提到最前并占满整行。 */
-.site-region--leftbar .brand-header--regular .brand-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 8px;
-}
-
-.site-region--leftbar .brand-header--regular .brand-stats > .brand-stat {
-  order: 0;
-  flex: 1 1 0;
-}
-
-.site-region--leftbar .brand-header--regular .brand-stats > .brand-stat:last-child {
-  order: -1;
-  flex: 1 1 100%;
-}
-
-/* 版本 tag 的容器变成整行后，不再需要省略号截断。 */
-.site-region--leftbar .brand-header--regular .brand-stats > .brand-stat:last-child .brand-stat__value,
-.site-region--leftbar #latest-tag-name {
-  max-width: none;
-  overflow: visible;
-  text-overflow: clip;
-  white-space: nowrap;
-}
-
-/* 左栏 npm 统计：week / month / total 三个数值块等分一行。
-   数值在上、英文标签在下，整块指向 npm 包页面；
-   尺寸与品牌区的 stars / forks 一致，hover 时整块出现浅色背景。 */
-.site-stats .site-stats__tiles {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.site-stats .site-stats__tile {
-  display: flex;
-  flex-direction: column;
+/* 左栏品牌区：GitHub 版本 / Stars / Forks 收进一个居中胶囊。
+   视觉上是一个整体，内部仍保留 GitHub / 版本 / Stars / Forks 四个独立链接。 */
+.site-region--leftbar .brand-header--regular .brand-capsule {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  align-self: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  height: 30px;
+  padding: 0 11px;
+  margin-top: 9px;
+  border: 1px solid rgba(255, 255, 255, .82);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .50);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+  color: var(--text-p3);
+  white-space: nowrap;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+
+.site-region--leftbar .brand-header--regular .brand-capsule:hover {
+  background: rgba(255, 255, 255, .68);
+  border-color: rgba(255, 255, 255, .95);
+}
+
+.site-region--leftbar .brand-capsule__repo {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--text-p2);
+  flex: none;
+}
+
+.site-region--leftbar .brand-capsule__version {
   min-width: 0;
-  padding: 8px 2px;
-  border-radius: 8px;
-  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  line-height: 1;
+  color: var(--text-p1);
   text-decoration: none;
-  transition: background-color 0.2s ease;
 }
 
-.site-stats .site-stats__tile:hover,
-.site-stats .site-stats__tile:focus-visible {
-  background: var(--block-border);
+.site-region--leftbar .brand-capsule__divider {
+  width: 1px;
+  height: 11px;
+  background: rgba(16, 24, 40, .10);
+  flex: none;
 }
 
-.site-stats .site-stats__tile:focus-visible {
+.site-region--leftbar .brand-capsule__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  font-size: 11px;
+  color: var(--text-p3);
+  text-decoration: none;
+}
+
+.site-region--leftbar .brand-capsule__stat b {
+  font-weight: 600;
+  color: var(--text-p2);
+  font-variant-numeric: tabular-nums;
+}
+
+.site-region--leftbar .brand-capsule__stat svg {
+  color: var(--text-p3);
+}
+
+.site-region--leftbar .brand-capsule__repo:hover,
+.site-region--leftbar .brand-capsule__version:hover,
+.site-region--leftbar .brand-capsule__stat:hover {
+  color: var(--text-p1);
+}
+
+.site-region--leftbar .brand-capsule__repo:focus-visible,
+.site-region--leftbar .brand-capsule__version:focus-visible,
+.site-region--leftbar .brand-capsule__stat:focus-visible {
+  outline: 2px solid var(--theme);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 左栏 npm 下载卡：最新版发布以来为主体，本周/本月为次级数据，累计与更新时间放底部。
+   头部「npm」红色字标由 ::before 补在 widgets.yml 的「下载量」标题前。 */
+.site-stats-widget .widget-header {
+  gap: 8px;
+}
+
+.site-stats-widget .widget-header .name {
+  flex: 1;
+  min-width: 0;
+  opacity: 1 !important;
+  color: var(--text-p2);
+}
+
+.site-stats-widget .widget-header .name::before {
+  content: 'npm';
+  margin-right: 6px;
+  color: #c92a2a;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+.site-stats__link {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  color: var(--text-p3);
+  text-decoration: none;
+  flex: none;
+}
+
+.site-stats__link:hover {
+  background: rgba(255, 255, 255, .55);
+  color: var(--text-p2);
+}
+
+.site-stats__link:focus-visible {
   outline: 2px solid var(--theme);
   outline-offset: 2px;
 }
 
-.site-stats .site-stats__tile .brand-stat__value {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.site-stats__primary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.site-stats__num {
   color: var(--text-p1);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
 }
 
-.site-stats .site-stats__tile .brand-stat__label {
+.site-stats__num[data-empty="true"] {
   color: var(--text-p3);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.2;
 }
 
-/* 更新时间单独一行小字：宽度不足时省略，不折行。 */
-.site-stats .site-stats__meta {
-  margin: 6px 0 0;
+.site-stats__pending {
+  align-self: center;
+  margin-left: 2px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(16, 24, 40, .06);
+  color: var(--text-p2);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.site-stats__cap {
   color: var(--text-p3);
-  font-size: 12px;
+  font-size: 11px;
+}
+
+.site-stats__secondary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 13px;
+}
+
+.site-stats__item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.site-stats__label {
+  color: var(--text-p3);
+  font-size: 11px;
+}
+
+.site-stats__val {
+  color: var(--text-p2);
+  font-size: 13px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  line-height: 1.4;
-  white-space: nowrap;
+}
+
+.site-stats__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 13px;
+  padding-top: 9px;
+  border-top: 1px solid var(--block-border);
+  color: var(--text-p3);
+  font-size: 11px;
+}
+
+.site-stats__meta--end {
+  justify-content: flex-end;
+}
+
+.site-stats__total {
+  flex: none;
+}
+
+.site-stats__meta-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.site-stats__time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.site-stats__time span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-stats__meta svg {
+  flex: none;
+}
+
+.site-stats__stale {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(16, 24, 40, .06);
+  color: var(--text-p2);
+  font-size: 10px;
+}
+
+.site-stats__empty {
+  margin: 2px 0 0;
+  color: var(--text-p3);
+  font-size: 12px;
 }
 
 /* 外观：glass 预设下的左栏渐变（与文章封面的靛蓝主色一致）。
